@@ -248,7 +248,12 @@ class Transformer(nn.Module):
 
     def forward(self, tokens: torch.Tensor, targets: Optional[torch.Tensor] = None) -> torch.Tensor:
         _bsz, seqlen = tokens.shape
-        h = self.tok_embeddings(tokens)
+        try :
+            h = self.tok_embeddings(tokens)
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            print(f"Tokens:  {tokens}, size={tokens.size()}")
+        
         h = self.dropout(h)
         freqs_cos = self.freqs_cos[:seqlen]
         freqs_sin = self.freqs_sin[:seqlen]

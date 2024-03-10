@@ -136,6 +136,12 @@ def process_shard(args, dataset_dir, vocab_size):
         text = text.strip()  # get rid of leading/trailing whitespace
         tokens = enc.encode(text, bos=True, eos=False)  # encode the text, use BOS
         all_tokens.extend(tokens)
+        # 检查 tokens 中的每个 token 是否超出了词汇表大小
+        out_of_vocab_tokens = [token for token in tokens if token >= vocab_size]
+        # 如果有超出词汇表大小的 token，则进行相应处理
+        if out_of_vocab_tokens:
+            print("Tokens out of vocabulary size:", out_of_vocab_tokens)
+            print("训练输入数据：", text)
     # convert to uint16 nparray
     all_tokens = np.array(all_tokens, dtype=np.uint16)
     # calculate the output filename

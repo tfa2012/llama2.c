@@ -1,0 +1,15 @@
+#不要执行download，自己将处理好的*json，以story列表的方式组织好放在data/ycfl目录下
+自定义 tokenizers
+python tinystories.py train_vocab --vocab_size=25000 --dataset_dir=ycfl
+
+python tinystories.py pretokenize --vocab_size=25000 --dataset_dir=ycfl
+
+将model转换为bin
+python tokenizer.py --tokenizer-model=data/ycfl/tok25000.model
+
+训练
+CPU 训练
+python train.py --vocab_source=custom --vocab_size=25000 --dataset_dir=ycfl --out_dir=ycfl --batch_size=4 --max_seq_len=800 --max_iters=20000 --warmup_iters=100 --eval_interval=200 --eval_iters=100 --device="cpu" --dtype="float16" --compile=False
+
+GPU 训练
+python train.py --vocab_source=custom --vocab_size=25000 --dataset_dir=ycfl --out_dir=ycfl --batch_size=4 --max_seq_len=800 --max_iters=20000 --warmup_iters=100 --eval_interval=200 --eval_iters=100 --device="cuda" --dtype="float16" --compile=False
