@@ -77,7 +77,11 @@ def train_vocab(vocab_size, dataset_dir):
     assert vocab_size > 0, "Vocab size must be positive"
 
     # output file prefix path for sentencepiece
-    prefix = os.path.join(DATA_CACHE_DIR, f"{dataset_dir}/tok{vocab_size}")
+    
+    prefix = os.path.join(DATA_CACHE_DIR, f"{dataset_dir}/toknzr")
+    os.makedirs(prefix, exist_ok=True)
+
+    prefix = os.path.join(prefix, f"tok{vocab_size}")
 
     # how many shards we'll use for vocab training, kept low for efficiency
     num_shards = 10
@@ -136,6 +140,12 @@ def process_shard(args, dataset_dir, vocab_size):
         text = text.strip()  # get rid of leading/trailing whitespace
         tokens = enc.encode(text, bos=True, eos=False)  # encode the text, use BOS
         all_tokens.extend(tokens)
+        # 检查 tokens 中的每个 token 是否超出了词汇表大小
+        out_of_vocab_tokens = [token for token in tokens if token >= vocab_size]
+        # 如果有超出词汇表大小的 token，则进行相应处理
+        if out_of_vocab_tokens:
+            print("Tokens out of vocabulary size:", out_of_vocab_tokens)
+            print("训练输入数据：", text)
     # convert to uint16 nparray
     all_tokens = np.array(all_tokens, dtype=np.uint16)
     # calculate the output filename
@@ -235,7 +245,7 @@ def get_tokenizer_model_path(dataset_dir, vocab_size):
     if vocab_size == 0:
         return None
     else:
-        return os.path.join(DATA_CACHE_DIR, f"{dataset_dir}/tok{vocab_size}.model")
+        return os.path.join(DATA_CACHE_DIR, f"{dataset_dir}/toknzr/tok{vocab_size}.model")
 
 class Task:
 
