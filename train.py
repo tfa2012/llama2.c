@@ -253,6 +253,10 @@ t0 = time.time()
 local_iter_num = 0  # number of iterations in the lifetime of this process
 raw_model = model.module if ddp else model  # unwrap DDP container if needed
 running_mfu = -1.0
+
+train_result_file = os.path.join(out_dir, f'train_results{vocab_size}.txt')
+trfile = open(train_result_file, 'w')
+
 while True:
     # determine and set the learning rate for this iteration
     lr = get_lr(iter_num) if decay_lr else learning_rate
@@ -262,7 +266,10 @@ while True:
     # evaluate the loss on train/val sets and write checkpoints
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
-        print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+        msg = f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}"
+        print(msg)
+        trfile.write(msg+"\n")
+        trfile.flush()
         if wandb_log:
             try:
                 wandb.log(
@@ -340,6 +347,7 @@ while True:
     # termination conditions
     if iter_num > max_iters:
         break
+trfile.close()
 
 if ddp:
     destroy_process_group()

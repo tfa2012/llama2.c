@@ -3,13 +3,26 @@
 python tinystories.py train_vocab --vocab_size=25000 --dataset_dir=ycfl
 
 python tinystories.py pretokenize --vocab_size=25000 --dataset_dir=ycfl
+(base) merlin@tfana:~/download/llama2.c-ml/llama2.c$ python tinystories.py pretokenize --vocab_size=25000 --dataset_dir=ycfl
+ 18%|██████████▏                                              | 569/3200 [00:00<00:00, 5683.65it/s]
+ 19%|██████████▊                                              | 604/3200 [00:00<00:00, 6037.54it/s]
+100%|██████████████████████████████████████████████████████████| 3200/3200 [00:00<00:00, 6042.27it/s]
+Saved data/ycfl/data04.bin, average seqlen: 113.88
+Saved data/ycfl/data05.bin, average seqlen: 114.96
+Saved data/ycfl/data07.bin, average seqlen: 113.53
+Saved data/ycfl/data06.bin, average seqlen: 117.62
+Saved data/ycfl/data08.bin, average seqlen: 118.12
+Done.
+(llama2.c) merlin@tfana:~/download/llama2.c-ml/llama2.c$ 
+
 
 将model转换为bin
-python tokenizer.py --tokenizer-model=data/ycfl/tok25000.model
+python tokenizer.py --tokenizer-model=data/ycfl/toknzr/tok25000.model
 
 训练
 CPU 训练
 python train.py --vocab_source=custom --vocab_size=25000 --dataset_dir=ycfl --out_dir=ycfl --batch_size=4 --max_seq_len=800 --max_iters=20000 --warmup_iters=100 --eval_interval=200 --eval_iters=100 --device="cpu" --dtype="float16" --compile=False
 
 GPU 训练
-python train.py --vocab_source=custom --vocab_size=25000 --dataset_dir=ycfl --out_dir=ycfl --batch_size=4 --max_seq_len=800 --max_iters=20000 --warmup_iters=100 --eval_interval=200 --eval_iters=100 --device="cuda" --dtype="float16" --compile=False
+默认的dim是288，发现过拟合，20000个训练结果为loss为10，生成的数据乱七八糟。
+python train.py --vocab_source=custom --vocab_size=25000 --dataset_dir=ycfl --out_dir=ycfl --dim=64 --batch_size=16 --max_seq_len=120 --max_iters=20000 --warmup_iters=100 --eval_interval=200 --eval_iters=200 --device="cuda" --dtype="float16" --compile=False --init_from=scratch
